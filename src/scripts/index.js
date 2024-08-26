@@ -1,5 +1,18 @@
 import "../pages/index.css";
-import { initialCards } from "./cards.js";
+import { initialCards } from "../scripts/cards.js";
+
+import {
+  openPopup,
+  closePopup,
+  closePopupByOverlay,
+  closePopupByEsc,
+} from "../components/modal.js";
+import {
+  createCard,
+  handleDeleteCard,
+  handleLikeCard,
+  handleImageClick,
+} from "../components/card.js";
 
 import avatar from "../images/avatar.jpg";
 import card1 from "../images/card_1.jpg";
@@ -15,7 +28,6 @@ const whoIsTheGoat = [
   { name: "logo", link: logo },
 ];
 
-const cardTemplate = document.querySelector("#card-template");
 const placesList = document.querySelector(".places__list");
 
 const popupEdit = document.querySelector(".popup_type_edit");
@@ -36,30 +48,6 @@ const saveButton = editForm.querySelector(".popup__button");
 const addForm = document.querySelector(".popup_type_new-card form");
 const cardNameInput = addForm.querySelector(".popup__input_type_card-name");
 const cardLinkInput = addForm.querySelector(".popup__input_type_url");
-
-function openPopup(popup) {
-  popup.classList.add("popup_is-opened");
-  popup.addEventListener("click", closePopupByOverlay);
-  document.addEventListener("keydown", closePopupByEsc);
-}
-function closePopup(popup) {
-  popup.classList.remove("popup_is-opened");
-  popup.removeEventListener("click", closePopupByOverlay);
-  document.removeEventListener("keydown", closePopupByEsc);
-}
-function closePopupByOverlay(event) {
-  if (event.target.classList.contains("popup")) {
-    closePopup(event.target);
-  }
-}
-function closePopupByEsc(event) {
-  if (event.key === "Escape") {
-    const openedPopup = document.querySelector(".popup_is-opened");
-    if (openedPopup) {
-      closePopup(openedPopup);
-    }
-  }
-}
 
 popupEdit.addEventListener("click", closePopupByOverlay);
 popupAdd.addEventListener("click", closePopupByOverlay);
@@ -91,44 +79,6 @@ cardImages.forEach((image) => {
     openPopup(popupImage);
   });
 });
-
-function createCard(cardData, handleDelete, handleLike) {
-  const cardElement = cardTemplate.content.cloneNode(true);
-
-  const cardImage = cardElement.querySelector(".card__image");
-  const cardTitle = cardElement.querySelector(".card__title");
-  const deleteButton = cardElement.querySelector(".card__delete-button");
-  const likeButton = cardElement.querySelector(".card__like-button");
-
-  cardImage.src = cardData.link;
-  cardImage.alt = cardData.name;
-  cardTitle.textContent = cardData.name;
-
-  deleteButton.addEventListener("click", handleDelete);
-  likeButton.addEventListener("click", handleLike);
-  cardImage.addEventListener("click", handleImageClick);
-
-  return cardElement;
-}
-function handleImageClick(event) {
-  const imageSrc = event.target.src;
-  const popupImage = document.querySelector(".popup_type_image");
-  const imageElement = popupImage.querySelector(".popup__image");
-  const caption = document.querySelector(".popup__caption");
-  caption.innerText = event.target.alt;
-  imageElement.src = imageSrc;
-  openPopup(popupImage);
-}
-
-function handleDeleteCard(event) {
-  const cardElement = event.target.closest(".card");
-  cardElement.remove();
-}
-
-function handleLikeCard(event) {
-  const likeButton = event.target;
-  likeButton.classList.toggle("card__like-button_is-active");
-}
 
 addForm.addEventListener("submit", (event) => {
   event.preventDefault();
