@@ -11,22 +11,7 @@ import {
   createCard,
   handleDeleteCard,
   handleLikeCard,
-  handleImageClick,
 } from "../components/card.js";
-
-import avatar from "../images/avatar.jpg";
-import card1 from "../images/card_1.jpg";
-import card2 from "../images/card_2.jpg";
-import card3 from "../images/card_3.jpg";
-import logo from "../images/logo.svg";
-
-const whoIsTheGoat = [
-  { name: "avatar", link: avatar },
-  { name: "card1", link: card1 },
-  { name: "card2", link: card2 },
-  { name: "card3", link: card3 },
-  { name: "logo", link: logo },
-];
 
 const placesList = document.querySelector(".places__list");
 
@@ -43,7 +28,6 @@ const profileAbout = document.querySelector(".profile__description");
 const editForm = document.querySelector(".popup_type_edit");
 const nameInput = editForm.querySelector(".popup__input_type_name");
 const aboutInput = editForm.querySelector(".popup__input_type_description");
-const saveButton = editForm.querySelector(".popup__button");
 
 const addForm = document.querySelector(".popup_type_new-card form");
 const cardNameInput = addForm.querySelector(".popup__input_type_card-name");
@@ -58,15 +42,18 @@ editButton.addEventListener("click", () => {
   aboutInput.value = profileAbout.textContent;
   openPopup(popupEdit);
 });
+
 addButton.addEventListener("click", () => {
   openPopup(popupAdd);
 });
+
 closeButtons.forEach((button) => {
   button.addEventListener("click", () => {
     closePopup(button.closest(".popup"));
   });
 });
-saveButton.addEventListener("click", (event) => {
+
+editForm.addEventListener("submit", (event) => {
   event.preventDefault();
   const newName = nameInput.value;
   const newAbout = aboutInput.value;
@@ -74,11 +61,15 @@ saveButton.addEventListener("click", (event) => {
   profileAbout.textContent = newAbout;
   closePopup(popupEdit);
 });
-cardImages.forEach((image) => {
-  image.addEventListener("click", () => {
-    openPopup(popupImage);
-  });
-});
+
+function handleImageClick(cardData) {
+  const popupImage = document.querySelector(".popup_type_image");
+  const imageElement = popupImage.querySelector(".popup__image");
+  const caption = document.querySelector(".popup__caption");
+  caption.innerText = cardData.name;
+  imageElement.src = cardData.link;
+  openPopup(popupImage);
+}
 
 addForm.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -93,8 +84,7 @@ addForm.addEventListener("submit", (event) => {
   );
   placesList.prepend(newCardElement);
   closePopup(popupAdd);
-  cardNameInput.value = "";
-  cardLinkInput.value = "";
+  addForm.reset();
 });
 
 initialCards.forEach((cardData) => {
