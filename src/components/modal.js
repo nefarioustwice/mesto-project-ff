@@ -1,23 +1,27 @@
-export function openPopup(popup) {
-  popup.classList.add("popup_is-opened");
-  popup.addEventListener("click", closePopupByOverlay);
-  document.addEventListener("keydown", closePopupByEsc);
-}
-export function closePopup(popup) {
-  popup.classList.remove("popup_is-opened");
-  popup.removeEventListener("click", closePopupByOverlay);
-  document.removeEventListener("keydown", closePopupByEsc);
-}
-export function closePopupByOverlay(event) {
-  if (event.target.classList.contains("popup")) {
-    closePopup(event.target);
+const handleDocumentKeydown = (event) => {
+  if (event.key === 'Escape') {
+    closeModal(document.querySelector('.popup_is-opened'));
   }
-}
-export function closePopupByEsc(event) {
-  if (event.key === "Escape") {
-    const openedPopup = document.querySelector(".popup_is-opened");
-    if (openedPopup) {
-      closePopup(openedPopup);
-    }
+};
+
+const handleModalClick = (event) => {
+  if (event.target.classList.contains('popup_is-opened')) {
+    return closeModal(event.target);
   }
-}
+
+  if (event.target.closest('.popup__close')) {
+    return closeModal(event.target.closest('.popup'));
+  }
+};
+
+const openModal = (element) => {
+  element.classList.add('popup_is-opened');
+  document.addEventListener('keydown', handleDocumentKeydown);
+};
+
+const closeModal = (element) => {
+  document.removeEventListener('keydown', handleDocumentKeydown);
+  element.classList.remove('popup_is-opened');
+};
+
+export { openModal, closeModal, handleModalClick };
