@@ -28,6 +28,7 @@ const hideInputError = ({
   errorElement.textContent = '';
 
   inputElement.classList.remove(inputErrorClass);
+  inputElement.setCustomValidity("");
 };
 
 const checkInputValidity = ({

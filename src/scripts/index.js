@@ -6,7 +6,11 @@ import {
   handleModalClick,
 } from '../components/modal.js';
 
-import { createCard as DOMCreateCard } from '../components/card.js';
+import { 
+  createCard as DOMCreateCard,
+  updateLikeButton,
+  deleteCardElement,
+} from '../components/card.js';
 
 import {
   getInitialCards as APIGetInitialCards,
@@ -20,6 +24,8 @@ import {
 } from '../components/api.js';
 
 import { clearValidation, enableValidation } from '../components/validation.js';
+
+import { renderLoading } from '../components/utils.js';
 
 const validationConfig = {
   formSelector: '.popup__form',
@@ -73,29 +79,13 @@ const setProfile = ({ name, description, avatar }) => {
   profileImage.style.backgroundImage = `url(${avatar})`;
 };
 
-const renderLoading = ({ buttonElement, isLoading }) => {
-  if (isLoading) {
-    buttonElement.textContent = 'Сохранение...';
-  } else {
-    buttonElement.textContent = 'Сохранить';
-  }
-};
-
 const handleCardLike = ({ cardId, buttonElement, counterElement }) => {
   buttonElement.disabled = true;
 
   if (buttonElement.classList.contains('card__like-button_is-active')) {
     APIUnlikeCard(cardId)
       .then(({ likes }) => {
-        buttonElement.classList.remove('card__like-button_is-active');
-
-        if (likes.length) {
-          counterElement.classList.add('card__like-counter_is-active');
-          counterElement.textContent = likes.length;
-        } else {
-          counterElement.classList.remove('card__like-counter_is-active');
-          counterElement.textContent = '';
-        }
+        updateLikeButton({ buttonElement, counterElement, likes });
       })
       .catch((error) => console.error(error))
       .finally(() => {
@@ -104,10 +94,7 @@ const handleCardLike = ({ cardId, buttonElement, counterElement }) => {
   } else {
     APILikeCard(cardId)
       .then(({ likes }) => {
-        buttonElement.classList.add('card__like-button_is-active');
-
-        counterElement.classList.add('card__like-counter_is-active');
-        counterElement.textContent = likes.length;
+        updateLikeButton({ buttonElement, counterElement, likes });
       })
       .catch((error) => console.error(error))
       .finally(() => {
@@ -116,32 +103,27 @@ const handleCardLike = ({ cardId, buttonElement, counterElement }) => {
   }
 };
 
-const handleCardDelete = ({ cardId, buttonElement }) => {
+const handleCardDelete = ({ cardId, buttonElement, cardElement }) => {
   openModal(popupConfirm);
   popupConfirmButton.onclick = () => {
-    buttonElement.disabled = true;
-
-    APIDeleteCard(cardId)
-      .then(() => {
-        buttonElement.closest('.card').remove();
-
-        closeModal(popupConfirm);
-      })
-      .catch((error) => {
-        buttonElement.disabled = false;
-        console.error(error);
-      });
+    deleteCardElement({ cardElement, buttonElement });
+    closeModal(popupConfirm);
   };
 };
 
+renderLoading({
+  buttonElement: cardFormSubmitButton,
+  isLoading: true,
+});
+
 const handleCardFormSubmit = (event) => {
   event.preventDefault();
-
+  
   renderLoading({
     buttonElement: cardFormSubmitButton,
     isLoading: true,
   });
-
+  
   APIAddCard({
     name: cardNameInput.value,
     link: cardLinkInput.value,
@@ -157,9 +139,10 @@ const handleCardFormSubmit = (event) => {
           onImageClick: handleCardImageClick,
         })
       );
-
+      
       cardForm.reset();
-
+      
+      clearValidation(cardForm, validationConfig);
       closeModal(popupCard);
     })
     .catch((error) => {
@@ -245,9 +228,6 @@ const handlePopupProfileButtonOpenClick = () => {
 
 const handlePopupCardButtonOpenClick = () => {
   cardForm.reset();
-
-  clearValidation(cardForm, validationConfig);
-
   openModal(popupCard);
 };
 
@@ -266,6 +246,7 @@ const handleProfileImageClick = () => {
 
   openModal(popupProfileImage);
 };
+
 
 cardForm.addEventListener('submit', handleCardFormSubmit);
 
@@ -301,12 +282,13 @@ Promise.all([APIGetUserInfo(), APIGetInitialCards()])
     });
 
     cardsData.forEach((cardData) => {
+      const isOwner = cardData.owner['_id'] === currentUserId;
       cardsContainer.append(
         DOMCreateCard({
           currentUserId,
           template: cardTemplate,
           data: cardData,
-          onDelete: handleCardDelete,
+          onDelete: isOwner ? handleCardDelete : null,
           onLike: handleCardLike,
           onImageClick: handleCardImageClick,
         })
