@@ -106,15 +106,14 @@ const handleCardLike = ({ cardId, buttonElement, counterElement }) => {
 const handleCardDelete = ({ cardId, buttonElement, cardElement }) => {
   openModal(popupConfirm);
   popupConfirmButton.onclick = () => {
-    deleteCardElement({ cardElement, buttonElement });
-    closeModal(popupConfirm);
+    APIDeleteCard(cardId)
+      .then(() => {
+        deleteCardElement({ cardElement, buttonElement });
+        closeModal(popupConfirm);
+      })
+      .catch((error) => console.error(error));
   };
 };
-
-renderLoading({
-  buttonElement: cardFormSubmitButton,
-  isLoading: true,
-});
 
 const handleCardFormSubmit = (event) => {
   event.preventDefault();

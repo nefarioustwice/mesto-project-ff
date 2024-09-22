@@ -23,12 +23,10 @@ const hideInputError = ({
   errorClass,
 }) => {
   const errorElement = formElement.querySelector(`.${inputElement.id}-error`);
-
+  inputElement.setCustomValidity("");
   errorElement.classList.remove(errorClass);
   errorElement.textContent = '';
-
   inputElement.classList.remove(inputErrorClass);
-  inputElement.setCustomValidity("");
 };
 
 const checkInputValidity = ({
